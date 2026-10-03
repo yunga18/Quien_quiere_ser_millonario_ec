@@ -1,0 +1,7 @@
+{
+  "id": "./", "name": "Millonario · Edición Ecuador", "short_name": "Millonario EC",
+  "lang": "es-EC", "description": "15 preguntas sobre Ecuador y un millón de dólares virtuales.",
+  "start_url": "./", "scope": "./", "display": "standalone",
+  "background_color": "#070d25", "theme_color": "#070d25",
+  "icons": [{"src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}]
+}

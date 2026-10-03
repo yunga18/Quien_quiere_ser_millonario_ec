@@ -1,0 +1,32 @@
+name: Probar el juego
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  game:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Reglas, premios y guardado
+        run: npm test
+      - name: Instalar herramientas de prueba
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Partida completa, celular y modo sin conexión
+        run: npm run test:browser
+        env:
+          PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: /usr/bin/google-chrome
+      - name: Guardar capturas y resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pruebas-millonario-ecuador
+          path: test-results/
+          retention-days: 7

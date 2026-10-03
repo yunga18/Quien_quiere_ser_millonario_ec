@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es-EC">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070d25">
+  <meta name="description" content="Entra al estudio y pon a prueba cuánto sabes de Ecuador. 15 preguntas, 3 comodines y un millón de dólares virtuales.">
+  <title>¿Quién quiere ser millonario? · Ecuador</title>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preload" href="assets/studio.webp" as="image">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <svg class="icon-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-sound" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5Zm4 3a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5Zm5 4 5 6m0-6-5 6"/></symbol>
+    <symbol id="i-fullscreen" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 3h10v5a5 5 0 0 1-10 0V3Zm0 1H3v3a4 4 0 0 0 5 4m9-7h4v3a4 4 0 0 1-5 4m-4 2v6m-5 2h10m-7-2h4"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="m7 3 3 5-3 3a14 14 0 0 0 6 6l3-3 5 3-2 4C10 22 2 14 3 5l4-2Z"/></symbol>
+    <symbol id="i-audience" viewBox="0 0 24 24"><circle cx="12" cy="7" r="3"/><path d="M7 20v-4a5 5 0 0 1 10 0v4M4 5a3 3 0 0 0 0 6m-2 9v-5a4 4 0 0 1 4-4m14-6a3 3 0 0 1 0 6m2 9v-5a4 4 0 0 0-4-4"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v11h5v-7h4v7h5V10"/></symbol>
+    <symbol id="i-voice" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0m-7 7v3m-4 0h8"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M3 4h15l3 3v14H3V4Zm4 0v6h10V4M7 21v-7h10v7"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 3H3v18h6m-1-9h13m-5-5 5 5-5 5"/></symbol>
+  </svg>
+  <a href="#main" class="skip-link">Saltar al juego</a>
+  <header class="topbar">
+    <a class="wordmark" href="./" aria-label="Millonario Ecuador, inicio"><span class="brand-star">✦</span><span>MILLONARIO<small>EDICIÓN ECUADOR</small></span></a>
+    <div class="topbar-center"><span class="live-dot"></span> TU CONOCIMIENTO. TU GRAN MOMENTO.</div>
+    <nav class="utility-nav" aria-label="Opciones del juego">
+      <button class="icon-button" id="sound-toggle" aria-label="Desactivar sonido" aria-pressed="true" title="Sonido"><svg><use href="#i-sound"/></svg></button>
+      <button class="icon-button" id="voice-toggle" aria-label="Activar voz del presentador" aria-pressed="false" title="Voz del presentador"><svg><use href="#i-voice"/></svg></button>
+      <button class="icon-button" id="fullscreen-toggle" aria-label="Pantalla completa" title="Pantalla completa"><svg><use href="#i-fullscreen"/></svg></button>
+      <button class="icon-button" id="rules-button" aria-label="Cómo jugar" title="Cómo jugar"><svg><use href="#i-info"/></svg></button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section id="home-screen" class="home-screen" aria-label="Bienvenido al estudio">
+      <div class="home-scene" aria-hidden="true"></div>
+      <div class="home-emblem"><img src="assets/emblem.svg" alt="¿Quién quiere ser millonario? Edición Ecuador" width="300" height="300"></div>
+      <div class="home-content">
+        <div class="edition-chip"><span class="ecuador-flag" aria-label="Ecuador"></span> DE AQUÍ. CON ORGULLO.</div>
+        <h1>El siguiente millonario<br>podrías ser <em>tú.</em></h1>
+        <p class="home-lead">Un país increíble. Quince preguntas.<br>¿Hasta dónde te lleva lo que sabes?</p>
+        <form id="start-form" class="start-form">
+          <label for="player-name">¿CÓMO TE LLAMAS?</label>
+          <div class="start-fields"><input id="player-name" name="name" autocomplete="nickname" maxlength="32" placeholder="Tu nombre o apodo" aria-label="Tu nombre o apodo"><button class="gold-button" type="submit">Entrar al estudio <svg><use href="#i-arrow"/></svg></button></div>
+        </form>
+        <button id="resume-button" class="resume-button" hidden><svg><use href="#i-save"/></svg><span>Continuar mi partida</span><svg><use href="#i-arrow"/></svg></button>
+        <div class="home-facts"><div><strong>15</strong><span>PREGUNTAS</span></div><i></i><div><strong>3</strong><span>COMODINES</span></div><i></i><div><strong>$1.000.000</strong><span>PREMIO VIRTUAL</span></div></div>
+        <div class="home-links"><button id="home-rules">Cómo jugar <svg><use href="#i-arrow"/></svg></button><button id="history-button"><svg><use href="#i-trophy"/></svg> Mis mejores partidas</button></div>
+      </div>
+      <div class="home-caption">COSTA · SIERRA · AMAZONÍA · GALÁPAGOS</div>
+    </section>
+
+    <section id="game-screen" class="game-screen" hidden aria-label="Partida">
+      <div class="game-layout">
+        <div class="play-area">
+          <div class="studio">
+            <div class="studio-shade" aria-hidden="true"></div>
+            <div class="lifelines" aria-label="Tus comodines">
+              <button id="lifeline-fifty" class="lifeline" title="Eliminar dos respuestas incorrectas"><span class="lifeline-circle"><b>50:50</b></span><span class="lifeline-label">CINCUENTA / CINCUENTA</span></button>
+              <button id="lifeline-audience" class="lifeline" title="Consultar al público simulado"><span class="lifeline-circle"><svg><use href="#i-audience"/></svg></span><span class="lifeline-label">EL PÚBLICO</span></button>
+              <button id="lifeline-phone" class="lifeline" title="Llamar a un amigo simulado"><span class="lifeline-circle"><svg><use href="#i-phone"/></svg></span><span class="lifeline-label">LA LLAMADA</span></button>
+            </div>
+            <img class="studio-emblem" src="assets/emblem.svg" alt="Millonario Ecuador" width="200" height="200">
+            <div class="contestant-tag"><span class="live-dot"></span><span id="contestant-name">Concursante</span><small>EN EL ASIENTO CALIENTE</small></div>
+            <div class="studio-on-air"><span></span> EN EL ESTUDIO</div>
+            <div class="host-caption" id="host-caption">Bienvenido. ¡Vamos por ese millón!</div>
+          </div>
+          <div class="question-board">
+            <div class="question-meta"><span id="question-number">PREGUNTA 01 / 15</span><span class="category" id="question-category">GEOGRAFÍA</span><span class="question-value" id="question-value">POR $100</span></div>
+            <div class="question-frame"><div class="question-inner"><h2 id="question-text" tabindex="-1"></h2></div></div>
+            <div id="answer-grid" class="answer-grid" role="group" aria-labelledby="question-text"></div>
+            <div id="explanation" class="explanation" hidden><div class="explanation-icon"><svg><use href="#i-check"/></svg></div><div><strong id="explanation-heading"></strong><p id="explanation-text"></p><a id="explanation-source" target="_blank" rel="noopener noreferrer" hidden>Consultar la fuente <span aria-hidden="true">↗</span></a></div></div>
+            <div class="game-bottom"><button id="retire-button" class="text-button"><svg><use href="#i-logout"/></svg> Me retiro</button><p id="game-hint">Elige una respuesta. Tómate tu tiempo.</p><button id="next-button" class="gold-button compact" hidden>Siguiente pregunta <svg><use href="#i-arrow"/></svg></button><button id="pause-button" class="text-button">Guardar y salir <svg><use href="#i-save"/></svg></button></div>
+            <div class="keyboard-hint">A, B, C, D para elegir <span>·</span> Enter para continuar <span>·</span> Sin límite de tiempo</div>
+          </div>
+        </div>
+        <aside class="prize-panel" aria-label="Escala de premios">
+          <div class="prize-panel-title"><svg><use href="#i-trophy"/></svg><span>CAMINO AL MILLÓN</span><button id="ladder-toggle" aria-expanded="false" aria-controls="prize-ladder" aria-label="Mostrar escala de premios">⌄</button></div>
+          <div class="current-winnings"><span>TU PREMIO ACTUAL</span><strong id="earned-prize">$0</strong></div>
+          <ol id="prize-ladder" class="prize-ladder" reversed></ol>
+          <div class="safe-prize"><svg><use href="#i-shield"/></svg><div><span>TIENES ASEGURADO</span><strong id="safe-prize">$0</strong></div></div>
+          <p class="prize-note">Los niveles 5 y 10 son seguros.<br>Todos los premios son virtuales.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section id="result-screen" class="result-screen" hidden aria-label="Resultado de la partida">
+      <div class="result-card"><div class="result-icon" id="result-icon"><svg><use href="#i-trophy"/></svg></div><span class="eyebrow" id="result-eyebrow">TU GRAN MOMENTO</span><h1 id="result-title">¡Una gran partida!</h1><p id="result-message"></p><div class="result-prize" id="result-prize">$0</div><span class="virtual-label">DÓLARES VIRTUALES</span><div class="result-stats"><div><strong id="result-correct">0 / 15</strong><span>ACIERTOS</span></div><div><strong id="result-lifelines">0 / 3</strong><span>COMODINES USADOS</span></div></div><button id="play-again" class="gold-button">Volver al asiento caliente <svg><use href="#i-arrow"/></svg></button><button id="result-home" class="text-button"><svg><use href="#i-home"/></svg> Volver al inicio</button><p id="result-save-note" class="result-save-note">Tu resultado se guardó en este dispositivo.</p></div>
+      <div id="confetti" class="confetti" aria-hidden="true"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><span>CREADO POR YUNGA <span class="footer-star">✦</span> HECHO EN ECUADOR</span><span>Juego de aficionados inspirado en el concurso televisivo. Premios virtuales.</span></footer>
+  <div id="announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <dialog id="dialog" class="dialog" aria-labelledby="dialog-title">
+    <button id="dialog-close" class="dialog-close icon-button" aria-label="Cerrar"><svg><use href="#i-close"/></svg></button>
+    <div id="dialog-content"></div>
+  </dialog>
+  <noscript><div class="noscript">Activa JavaScript en tu navegador para entrar al estudio.</div></noscript>
+</body>
+</html>
