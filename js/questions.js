@@ -1,3 +1,6 @@
+import { GENERAL_QUESTIONS } from './general-questions.js';
+import { ecuadorTopic } from './categories.js';
+
 // The first answer in the source bank is correct. The engine shuffles all four.
 // Five difficulty pools; each game draws three different questions per pool.
 const sources = {
@@ -19,7 +22,7 @@ const sources = {
 };
 const q = (difficulty, id, category, question, answers, explanation, source) => ({ difficulty, id, category, question, answers, explanation, ...(source ? { source: sources[source] || source } : {}) });
 
-export const QUESTIONS = [
+const ECUADOR_QUESTIONS = [
   q(1,'ec01','Geografía','¿Cuál es la capital de Ecuador?', ['Quito','Guayaquil','Cuenca','Loja'], 'Quito es la capital del Ecuador y se encuentra en la provincia de Pichincha.'),
   q(1,'ec02','Geografía','¿En qué continente se encuentra Ecuador?', ['América','Europa','Asia','Oceanía'], 'Ecuador se encuentra en América del Sur, junto a Colombia y Perú.'),
   q(1,'ec03','Geografía','¿Qué océano baña las costas ecuatorianas?', ['Pacífico','Atlántico','Índico','Ártico'], 'La costa ecuatoriana está al oeste del país, frente al océano Pacífico.'),
@@ -114,4 +117,9 @@ export const QUESTIONS = [
   q(5,'ec88','Historia','¿Quién escribió Historia del Reino de Quito?', ['Juan de Velasco','Eugenio Espejo','Pedro Vicente Maldonado','Juan José Flores'], 'El jesuita Juan de Velasco escribió Historia del Reino de Quito en el siglo XVIII.'),
   q(5,'ec89','Historia','¿Qué ecuatoriana ejerció el voto en 1924, convirtiéndose en una pionera del sufragio femenino?', ['Matilde Hidalgo','Manuela Sáenz','Dolores Cacuango','Tránsito Amaguaña'], 'Matilde Hidalgo de Procel ejerció el voto en 1924 y abrió camino a los derechos políticos de las mujeres.'),
   q(5,'ec90','Historia','¿Quién dirigió el periódico Primicias de la Cultura de Quito, publicado en 1792?', ['Eugenio Espejo','Juan León Mera','José de la Cuadra','Vicente Rocafuerte'], 'Eugenio Espejo impulsó Primicias de la Cultura de Quito, una publicación clave de la Ilustración quiteña.', 'espejo'),
+];
+
+export const QUESTIONS = [
+  ...ECUADOR_QUESTIONS.map(question => ({ ...question, scope: 'ecuador', topic: ecuadorTopic(question.category) })),
+  ...GENERAL_QUESTIONS,
 ];

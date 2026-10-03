@@ -15,12 +15,14 @@ No necesita compilación, base de datos, claves, cuentas para jugadores ni servi
 
 ## Incluye
 
-- 90 preguntas de Ecuador; cada partida elige 15, con cinco grados de dificultad y respuestas barajadas.
+- 215 preguntas: 90 de Ecuador y 125 de cultura general; cada partida elige 15, con cinco grados de dificultad y respuestas barajadas.
+- Ocho categorías: Ecuador, cultura general, geografía, historia, ciencias, deportes, arte y literatura, y todo mezclado. El selector muestra la cantidad de preguntas disponibles. La categoría se conserva al continuar y al volver a jugar.
 - Confirmación de respuesta definitiva, pausa de suspenso, revelación y explicación educativa.
 - 50:50, público simulado y llamada simulada de 30 segundos, utilizables una vez por partida y combinables. Público y amigo pueden equivocarse. El reloj de llamada nunca termina la pregunta.
 - Seguros de $1.000 en la pregunta 5 y $32.000 en la 10. Retirarse entrega lo ganado; fallar entrega el último seguro alcanzado. Sin límite de tiempo para responder.
 - Sonidos originales sintetizados, ambiente de estudio, voz opcional del navegador y pantalla completa donde sea compatible.
-- Guardado automático, continuar partida y cinco mejores marcas locales. Se conservan las veinte últimas partidas para reducir repeticiones.
+- Guardado automático, continuar partida y un historial de hasta veinte resultados con su categoría. Puedes borrar la partida guardada desde el inicio, borrar un resultado individual o vaciar el historial desde «Mis partidas», siempre con confirmación. El borrado del historial conserva la partida en curso y las preferencias.
+- Las partidas guardadas antes de incorporar categorías siguen funcionando como partidas de Ecuador.
 - Computadora, tablet y celular; teclado A/B/C/D y Enter, diálogos accesibles y modo de movimiento reducido.
 - Caché para jugar sin conexión después de una primera carga completa por HTTPS o localhost.
 
@@ -50,11 +52,13 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-También se ejecutan en **Actions → Probar el juego**, con una partida completa, recarga, retiro, fallo, cuatro anchos de pantalla y modo sin conexión. Las capturas y el informe quedan en el artefacto `pruebas-millonario-ecuador` durante siete días. Este flujo solo lee el código y no publica la web.
+También se ejecutan en **Actions → Probar el juego**, con una partida completa, categorías, recarga, retiro, fallo, borrado individual y completo, cuatro anchos de pantalla y modo sin conexión. Las capturas y el informe quedan en el artefacto `pruebas-millonario-ecuador` durante siete días. Este flujo solo lee el código y no publica la web.
 
 ## Cambiar preguntas o diseño
 
-- `js/questions.js`: preguntas, categorías, dificultades (1–5) y explicaciones. La primera opción de cada pregunta del banco es la correcta; el motor baraja las opciones al comenzar. Cada dificultad necesita al menos tres preguntas.
+- `js/questions.js`: banco original de Ecuador e integración con el banco general.
+- `js/general-questions.js`: 125 preguntas de cultura general, temas, dificultades (1–5) y explicaciones. La primera opción de cada pregunta del banco es la correcta; el motor baraja las opciones al comenzar. Cada categoría necesita al menos tres preguntas por dificultad.
+- `js/categories.js`: categorías disponibles y filtros por país o tema.
 - `js/engine.js`: reglas, premios, seguros y validación del guardado.
 - `js/app.js`: pantallas, comodines, voz y persistencia local.
 - `js/audio.js`: sonidos propios con Web Audio.

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { QUESTIONS } from '../js/questions.js';
+import { CATEGORIES, filterQuestions } from '../js/categories.js';
 import { PRIZES, createGame, currentQuestion, selectAnswer, cancelSelection, lockAnswer, revealAnswer, advanceGame, retire, useLifeline, restoreGame } from '../js/engine.js';
 
 const answer = (game, correct = true) => {
@@ -15,16 +16,54 @@ function atQuestion(number) {
 }
 function random(seed) { return () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; }; }
 
-test('90 distinct, complete questions and 18 choices per difficulty pool', () => {
-  assert.equal(QUESTIONS.length, 90);
-  assert.equal(new Set(QUESTIONS.map(q => q.id)).size, 90);
-  assert.equal(new Set(QUESTIONS.map(q => q.question)).size, 90);
-  for (let difficulty = 1; difficulty <= 5; difficulty++) assert.equal(QUESTIONS.filter(q => q.difficulty === difficulty).length, 18);
+test('215 distinct, complete questions, preserving Ecuador and adding general knowledge', () => {
+  assert.equal(QUESTIONS.length, 215);
+  assert.equal(new Set(QUESTIONS.map(q => q.id)).size, 215);
+  assert.equal(new Set(QUESTIONS.map(q => q.question)).size, 215);
+  assert.equal(filterQuestions(QUESTIONS, 'ecuador').length, 90);
+  assert.equal(filterQuestions(QUESTIONS, 'general').length, 125);
+  for (let difficulty = 1; difficulty <= 5; difficulty++) {
+    assert.equal(filterQuestions(QUESTIONS, 'ecuador').filter(q => q.difficulty === difficulty).length, 18);
+    assert.equal(filterQuestions(QUESTIONS, 'general').filter(q => q.difficulty === difficulty).length, 25);
+  }
   for (const q of QUESTIONS) {
     assert.equal(q.answers.length, 4); assert.equal(new Set(q.answers).size, 4);
-    assert.ok(q.question && q.category && q.explanation);
+    assert.ok(q.question && q.category && q.explanation && q.topic);
     if (q.source) assert.ok(q.source.startsWith('https://'));
   }
+});
+test('every category supports a complete game at all five difficulties and uses only matching questions', () => {
+  for (const category of CATEGORIES) {
+    const pool = filterQuestions(QUESTIONS, category.id);
+    for (let level = 1; level <= 5; level++) assert.ok(pool.filter(q => q.difficulty === level).length >= 3, `${category.id}, level ${level}`);
+    for (let seed = 1; seed <= 8; seed++) {
+      let game = createGame(QUESTIONS, 'Yunga', random(seed), [], category.id);
+      assert.equal(game.category, category.id);
+      assert.equal(new Set(game.questions.map(q => q.id)).size, 15);
+      assert.ok(game.questions.every(q => pool.some(original => original.id === q.id)));
+      assert.deepEqual(restoreGame(JSON.stringify(game), QUESTIONS), game);
+      for (let round = 0; round < 15; round++) {
+        assert.equal(currentQuestion(game).difficulty, Math.floor(round / 3) + 1);
+        game = advanceGame(answer(game));
+      }
+      assert.equal(game.result.prize, 1000000);
+    }
+  }
+  assert.throws(() => createGame(QUESTIONS, 'Yunga', Math.random, [], 'missing'), /categoría/);
+  const shortBank = filterQuestions(QUESTIONS, 'general').filter(q => q.difficulty > 1);
+  assert.throws(() => createGame(shortBank, 'Yunga', Math.random, [], 'general'), /nivel 1/);
+});
+test('legacy Ecuador saves still load, while category mismatches are rejected', () => {
+  const legacy = structuredClone(createGame(QUESTIONS, 'Yunga'));
+  delete legacy.category;
+  legacy.questions.forEach(q => { delete q.scope; delete q.topic; });
+  const restored = restoreGame(legacy, QUESTIONS);
+  assert.equal(restored.category, 'ecuador');
+  assert.equal(restored.questions[0].id, legacy.questions[0].id);
+  assert.ok(restored.questions.every(q => q.scope === 'ecuador'));
+  const general = createGame(QUESTIONS, 'Yunga', random(1), [], 'general');
+  assert.equal(restoreGame({ ...general, category: 'ecuador' }, QUESTIONS), null);
+  assert.equal(restoreGame({ ...general, category: 'missing' }, QUESTIONS), null);
 });
 test('games draw 15 unique questions with increasing difficulty and shuffled answers', () => {
   const positions = new Set();

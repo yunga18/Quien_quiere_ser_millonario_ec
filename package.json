@@ -1,9 +1,9 @@
 {
   "name": "millonario-ecuador",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
-  "description": "Un concurso de preguntas sobre Ecuador, sin servicios externos.",
+  "description": "Un concurso de preguntas sobre Ecuador y cultura general, con categorías y partidas locales.",
   "scripts": { "test": "node --test tests/engine.test.js", "test:browser": "node tests/browser.mjs", "start": "python3 -m http.server 8080" },
   "devDependencies": { "playwright": "1.56.1" }
 }

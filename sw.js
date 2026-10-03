@@ -1,5 +1,5 @@
-const CACHE = 'millonario-ecuador-v1';
-const ASSETS = ['./', './index.html', './styles.css', './js/app.js', './js/engine.js', './js/questions.js', './js/audio.js', './assets/studio.webp', './assets/emblem.svg', './assets/icon.svg', './manifest.webmanifest'];
+const CACHE = 'millonario-ecuador-v2';
+const ASSETS = ['./', './index.html', './styles.css', './js/app.js', './js/engine.js', './js/questions.js', './js/general-questions.js', './js/categories.js', './js/audio.js', './assets/studio.webp', './assets/emblem.svg', './assets/icon.svg', './manifest.webmanifest'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });

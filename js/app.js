@@ -1,4 +1,5 @@
 import { QUESTIONS } from './questions.js';
+import { CATEGORIES, DEFAULT_CATEGORY, getCategory, filterQuestions } from './categories.js';
 import { PRIZES, LETTERS, SAFE_LEVELS, createGame, currentQuestion, currentPrize, selectAnswer, cancelSelection, lockAnswer, revealAnswer, advanceGame, retire, useLifeline, restoreGame } from './engine.js';
 import { StudioAudio, speak } from './audio.js';
 
@@ -9,13 +10,13 @@ const KEYS = { save: 'millonario.ec.game.v1', preferences: 'millonario.ec.prefer
 let storageAvailable = true;
 function read(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } }
 function write(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { storageAvailable = false; return false; } }
-function remove(key) { try { localStorage.removeItem(key); } catch { storageAvailable = false; } }
+function remove(key) { try { localStorage.removeItem(key); return true; } catch { storageAvailable = false; return false; } }
 try { localStorage.setItem('millonario.ec.storage-test', '1'); localStorage.removeItem('millonario.ec.storage-test'); } catch { storageAvailable = false; }
 const storedPreferences = read(KEYS.preferences, {});
-const preferences = { sound: storedPreferences?.sound !== false, voice: storedPreferences?.voice === true, name: typeof storedPreferences?.name === 'string' ? storedPreferences.name.slice(0, 32) : '' };
+const preferences = { sound: storedPreferences?.sound !== false, voice: storedPreferences?.voice === true, name: typeof storedPreferences?.name === 'string' ? storedPreferences.name.slice(0, 32) : '', category: getCategory(storedPreferences?.category) ? storedPreferences.category : DEFAULT_CATEGORY };
 let history = read(KEYS.history, []);
 if (!Array.isArray(history)) history = [];
-history = history.filter(h => h && typeof h.id === 'string' && typeof h.name === 'string' && typeof h.endedAt === 'string' && Number.isInteger(h.correctCount) && h.correctCount >= 0 && h.correctCount <= 15 && [0, ...PRIZES].includes(h.prize)).slice(0, 20);
+history = history.filter(h => h && typeof h.id === 'string' && typeof h.name === 'string' && typeof h.endedAt === 'string' && Number.isInteger(h.correctCount) && h.correctCount >= 0 && h.correctCount <= 15 && [0, ...PRIZES].includes(h.prize)).slice(0, 20).map(h => ({ ...h, category: getCategory(h.category) ? h.category : DEFAULT_CATEGORY }));
 let savedGame = restoreGame(read(KEYS.save, null), QUESTIONS);
 if (!savedGame) remove(KEYS.save);
 let game = null;
@@ -48,9 +49,23 @@ function saveGame() {
 }
 function updateResume() {
   $('resume-button').hidden = !savedGame;
-  if (savedGame) $('resume-button').querySelector('span').textContent = `Continuar · ${savedGame.name} · pregunta ${savedGame.index + 1}`;
+  $('delete-save-button').hidden = !savedGame;
+  if (savedGame) $('resume-button').querySelector('span').textContent = `Continuar · ${savedGame.name} · ${getCategory(savedGame.category).name} · pregunta ${savedGame.index + 1}`;
   $('player-name').value = preferences.name || savedGame?.name || '';
 }
+function updateCategoryDescription() {
+  const category = $('game-category').value;
+  $('category-description').textContent = `${getCategory(category).description} ${filterQuestions(QUESTIONS, category).length} preguntas disponibles.`;
+}
+for (const category of CATEGORIES) {
+  const option = document.createElement('option'); option.value = category.id; option.textContent = category.name;
+  $('game-category').append(option);
+}
+$('game-category').value = preferences.category;
+updateCategoryDescription();
+$('game-category').addEventListener('change', () => {
+  preferences.category = $('game-category').value; write(KEYS.preferences, preferences); updateCategoryDescription();
+});
 function home() {
   if (game?.phase === 'locked') { toast('La respuesta se está revelando. Espera un momento.'); return; }
   if (screen === 'game') saveGame();
@@ -63,10 +78,11 @@ function readQuestion() {
   const answers = q.answers.map((answer, i) => game.eliminated.includes(i) ? '' : `${LETTERS[i]}. ${answer}.`).join(' ');
   speak(`Pregunta ${game.index + 1}. Por ${money(currentPrize(game))} dólares virtuales. ${q.question} ${answers}`, preferences.voice);
 }
-function startGame(name) {
+function startGame(name, category = $('game-category').value) {
   const recentIds = history.slice(0, 3).flatMap(h => Array.isArray(h.questionIds) ? h.questionIds : []);
-  game = createGame(QUESTIONS, name, Math.random, recentIds);
-  preferences.name = game.name; write(KEYS.preferences, preferences);
+  game = createGame(QUESTIONS, name, Math.random, recentIds, category);
+  preferences.name = game.name; preferences.category = category; write(KEYS.preferences, preferences);
+  $('game-category').value = category; updateCategoryDescription();
   audio.cue('start'); audio.startAmbience();
   setScreen('game'); renderGame(true); saveGame(); readQuestion();
 }
@@ -83,6 +99,7 @@ function renderGame(focus = false) {
   $('contestant-name').textContent = game.name;
   $('question-number').textContent = `PREGUNTA ${questionNumber} / 15`;
   $('question-category').textContent = q.category.toLocaleUpperCase('es');
+  $('question-category').title = `Categoría de la partida: ${getCategory(game.category).name}`;
   $('question-value').textContent = `POR ${money(currentPrize(game))}`;
   $('question-text').textContent = q.question;
   $('earned-prize').textContent = money(game.won);
@@ -239,26 +256,48 @@ function showPhone(timed) {
 }
 
 function showRules() {
-  if (!openDialog('rules', '<span class="dialog-eyebrow">ASÍ SE LLEGA AL MILLÓN</span><h2 id="dialog-title">Quince pasos. Una oportunidad.</h2><ol class="rules-list"><li><span class="rule-number">01</span><div><strong>Quince preguntas sobre Ecuador</strong><p>Cuatro opciones, una respuesta correcta. La dificultad aumenta. Puedes pensar sin límite de tiempo.</p></div></li><li><span class="rule-number">02</span><div><strong>Tu respuesta tiene que ser definitiva</strong><p>Elige una opción y confírmala. Si fallas, la partida termina y conservas el último premio seguro.</p></div></li><li><span class="rule-number">03</span><div><strong>Dos premios seguros</strong><p>Acertar la pregunta 5 asegura $1.000; acertar la 10 asegura $32.000. Antes del primer seguro, un fallo deja $0.</p></div></li><li><span class="rule-number">04</span><div><strong>Tres comodines, una vez cada uno</strong><p>50:50 elimina dos opciones incorrectas. El público y la llamada son simulaciones: pueden equivocarse. Se pueden combinar.</p></div></li><li><span class="rule-number">05</span><div><strong>Retírate cuando quieras</strong><p>Antes de confirmar una respuesta, puedes llevarte lo ganado. «Guardar y salir» permite continuar la partida en este navegador.</p></div></li></ol><p class="fine-print">Los premios son virtuales. Tu nombre, partida y mejores resultados se guardan solo en este navegador. Sonidos y voz del presentador se controlan arriba. En computadora puedes elegir con A, B, C o D.</p><div class="dialog-actions"><button class="gold-button" id="rules-done">¡Entendido! ' + icon('check') + '</button></div>')) return;
+  if (!openDialog('rules', '<span class="dialog-eyebrow">ASÍ SE LLEGA AL MILLÓN</span><h2 id="dialog-title">Quince pasos. Una oportunidad.</h2><ol class="rules-list"><li><span class="rule-number">01</span><div><strong>Elige tu categoría y responde quince preguntas</strong><p>Ecuador, cultura general o un tema específico. Cuatro opciones, una respuesta correcta. La dificultad aumenta. Puedes pensar sin límite de tiempo.</p></div></li><li><span class="rule-number">02</span><div><strong>Tu respuesta tiene que ser definitiva</strong><p>Elige una opción y confírmala. Si fallas, la partida termina y conservas el último premio seguro.</p></div></li><li><span class="rule-number">03</span><div><strong>Dos premios seguros</strong><p>Acertar la pregunta 5 asegura $1.000; acertar la 10 asegura $32.000. Antes del primer seguro, un fallo deja $0.</p></div></li><li><span class="rule-number">04</span><div><strong>Tres comodines, una vez cada uno</strong><p>50:50 elimina dos opciones incorrectas. El público y la llamada son simulaciones: pueden equivocarse. Se pueden combinar.</p></div></li><li><span class="rule-number">05</span><div><strong>Retírate cuando quieras</strong><p>Antes de confirmar una respuesta, puedes llevarte lo ganado. «Guardar y salir» permite continuar la partida en este navegador.</p></div></li></ol><p class="fine-print">Los premios son virtuales. Tu nombre, categoría, partida y resultados se guardan solo en este navegador. Puedes borrar la partida guardada desde el inicio y los resultados desde «Mis partidas». Sonidos y voz del presentador se controlan arriba. En computadora puedes elegir con A, B, C o D.</p><div class="dialog-actions"><button class="gold-button" id="rules-done">¡Entendido! ' + icon('check') + '</button></div>')) return;
   $('rules-done').addEventListener('click', closeDialog);
 }
+function confirmDeletion(title, copy, action, returnToHistory = false) {
+  if (!openDialog('delete', '<span class="dialog-eyebrow">ADMINISTRAR MIS PARTIDAS</span><h2 id="dialog-title"></h2><p id="delete-copy"></p><p class="fine-print">Esta eliminación no se puede deshacer.</p><div class="dialog-actions"><button class="outline-button" id="delete-cancel">Conservar</button><button class="danger-button" id="delete-confirm">Borrar ' + icon('trash') + '</button></div>')) return;
+  $('dialog-title').textContent = title; $('delete-copy').textContent = copy;
+  $('delete-cancel').addEventListener('click', () => { closeDialog(); if (returnToHistory) showHistory(); });
+  $('delete-confirm').addEventListener('click', () => {
+    if (action() === false) return;
+    closeDialog();
+    if (returnToHistory) showHistory(); else $('player-name').focus({ preventScroll: true });
+  });
+  $('delete-cancel').focus();
+}
+function deleteHistory(nextHistory) {
+  if (!write(KEYS.history, nextHistory)) { toast('No se pudo guardar el borrado. Revisa el almacenamiento de tu navegador.'); return false; }
+  history = nextHistory; toast(history.length ? 'Partida borrada del historial.' : 'El historial está vacío.');
+  return true;
+}
 function showHistory() {
-  if (!openDialog('history', '<span class="dialog-eyebrow">TUS GRANDES MOMENTOS</span><h2 id="dialog-title">El salón de la fama.</h2><p>Las cinco mejores partidas de este navegador.</p><ol class="history-list" id="history-list"></ol><p class="fine-print" id="history-empty">Aún no hay partidas terminadas. Tu primer gran momento te espera.</p><div class="dialog-actions"><button class="outline-button" id="history-clear">Borrar marcas</button><button class="gold-button" id="history-done">Volver ' + icon('arrow') + '</button></div>')) return;
+  if (!openDialog('history', '<span class="dialog-eyebrow">TUS GRANDES MOMENTOS</span><h2 id="dialog-title">Tus partidas.</h2><p>Hasta veinte resultados de este navegador, ordenados por premio. Puedes borrar uno o limpiar el historial.</p><ol class="history-list" id="history-list"></ol><p class="fine-print" id="history-empty">Aún no hay partidas terminadas. Tu primer gran momento te espera.</p><div class="dialog-actions"><button class="danger-button" id="history-clear">Borrar todo</button><button class="gold-button" id="history-done">Volver ' + icon('arrow') + '</button></div>')) return;
   $('history-empty').hidden = history.length > 0;
   $('history-clear').hidden = history.length === 0;
-  [...history].sort((a, b) => b.prize - a.prize || b.correctCount - a.correctCount).slice(0, 5).forEach((h, i) => {
+  [...history].sort((a, b) => b.prize - a.prize || b.correctCount - a.correctCount || b.endedAt.localeCompare(a.endedAt)).forEach((h, i) => {
     const row = document.createElement('li'); row.className = 'history-row';
-    row.innerHTML = `<span class="history-rank">${i + 1}</span><span class="history-name"></span><strong class="history-prize">${money(h.prize)}</strong>`;
+    row.innerHTML = `<span class="history-rank">${i + 1}</span><span class="history-name"></span><strong class="history-prize">${money(h.prize)}</strong><button class="history-delete icon-button">${icon('trash')}</button>`;
     row.querySelector('.history-name').textContent = h.name;
     const date = new Date(h.endedAt); const small = document.createElement('small');
-    small.textContent = `${h.correctCount} aciertos · ${Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-EC')}`;
+    small.textContent = `${getCategory(h.category).name} · ${h.correctCount} aciertos · ${Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-EC')}`;
     row.querySelector('.history-name').append(small); $('history-list').append(row);
+    const deleteButton = row.querySelector('.history-delete'); deleteButton.dataset.historyDelete = h.id;
+    deleteButton.setAttribute('aria-label', `Borrar partida de ${h.name}, ${getCategory(h.category).name}, ${money(h.prize)}`);
+    deleteButton.title = 'Borrar esta partida';
+    deleteButton.addEventListener('click', () => {
+      closeDialog();
+      confirmDeletion('¿Borrar esta partida?', `Se eliminará del historial la partida de ${h.name} en ${getCategory(h.category).name}, con ${h.correctCount} aciertos y ${money(h.prize)} virtuales.`, () => deleteHistory(history.filter(item => item.id !== h.id)), true);
+    });
   });
   $('history-done').addEventListener('click', closeDialog);
   $('history-clear').addEventListener('click', () => {
-    const b = $('history-clear');
-    if (b.dataset.confirm !== 'true') { b.textContent = 'Confirmar borrado'; b.dataset.confirm = 'true'; return; }
-    history = []; write(KEYS.history, history); $('history-list').replaceChildren(); $('history-empty').hidden = false; b.hidden = true;
+    closeDialog();
+    confirmDeletion('¿Borrar todo el historial?', `Se eliminarán tus ${history.length} resultados guardados. La partida en curso y tus opciones de sonido se conservarán.`, () => deleteHistory([]), true);
   });
 }
 
@@ -267,7 +306,7 @@ function showResult() {
   const won = result.reason === 'won';
   const retired = result.reason === 'retired';
   if (!history.some(h => h.id === game.id)) {
-    history.unshift({ id: game.id, name: game.name, ...result, questionIds: game.questions.map(q => q.id) });
+    history.unshift({ id: game.id, name: game.name, category: game.category, ...result, questionIds: game.questions.map(q => q.id) });
     history = history.slice(0, 20); write(KEYS.history, history);
   }
   savedGame = null; remove(KEYS.save); audio.stopAmbience();
@@ -278,7 +317,7 @@ function showResult() {
   $('result-prize').textContent = money(result.prize);
   $('result-correct').textContent = `${result.correctCount} / 15`;
   $('result-lifelines').textContent = `${Object.values(game.lifelines).filter(Boolean).length} / 3`;
-  $('result-save-note').textContent = storageAvailable ? 'Tu resultado se guardó en este dispositivo.' : 'Tu navegador no permite guardar resultados. Puedes seguir jugando.';
+  $('result-save-note').textContent = storageAvailable ? `${getCategory(game.category).name} · Tu resultado se guardó en este dispositivo.` : 'Tu navegador no permite guardar resultados. Puedes seguir jugando.';
   $('result-icon').innerHTML = icon(won ? 'trophy' : retired ? 'logout' : 'shield');
   const confetti = $('confetti'); confetti.replaceChildren();
   if (won && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -296,12 +335,21 @@ function showResult() {
 $('start-form').addEventListener('submit', event => {
   event.preventDefault(); audio.unlock();
   const name = $('player-name').value;
-  if (!savedGame) { startGame(name); return; }
+  const category = $('game-category').value;
+  if (!savedGame) { startGame(name, category); return; }
   openDialog('new-game', '<span class="dialog-eyebrow">TUS OPCIONES</span><h2 id="dialog-title">Tu asiento sigue reservado.</h2><p>Tienes una partida guardada. Puedes continuarla o empezar una nueva.</p><p class="fine-print">Una nueva partida reemplaza la partida en curso. Tus mejores marcas se conservan.</p><div class="dialog-actions"><button class="outline-button" id="new-cancel">Continuar partida</button><button class="gold-button" id="new-confirm">Empezar de nuevo</button></div>');
   $('new-cancel').addEventListener('click', () => { closeDialog(); resume(); });
-  $('new-confirm').addEventListener('click', () => { closeDialog(); startGame(name); });
+  $('new-confirm').addEventListener('click', () => { closeDialog(); startGame(name, category); });
 });
 $('resume-button').addEventListener('click', resume);
+$('delete-save-button').addEventListener('click', () => {
+  if (!savedGame) return;
+  confirmDeletion('¿Borrar la partida guardada?', `Se eliminará la partida de ${savedGame.name} en ${getCategory(savedGame.category).name}, que está en la pregunta ${savedGame.index + 1}. Tus resultados anteriores se conservarán.`, () => {
+    if (!remove(KEYS.save)) { toast('No se pudo borrar la partida. Revisa el almacenamiento de tu navegador.'); return false; }
+    clearTimeout(revealTimeout); game = null; savedGame = null; updateResume(); toast('Partida guardada borrada. Ya puedes empezar otra.');
+    return true;
+  });
+});
 $('home-rules').addEventListener('click', showRules);
 $('rules-button').addEventListener('click', showRules);
 $('history-button').addEventListener('click', showHistory);
@@ -320,7 +368,7 @@ $('next-button').addEventListener('click', () => {
   else { renderGame(true); saveGame(); readQuestion(); announce(`Pregunta ${game.index + 1}. Por ${money(currentPrize(game))}. ${currentQuestion(game).question}`); }
 });
 for (const type of ['fifty', 'audience', 'phone']) $('lifeline-' + type).addEventListener('click', () => takeLifeline(type));
-$('play-again').addEventListener('click', () => startGame(game.name));
+$('play-again').addEventListener('click', () => startGame(game.name, game.category));
 $('result-home').addEventListener('click', home);
 document.querySelector('.wordmark').addEventListener('click', event => { event.preventDefault(); home(); });
 $('ladder-toggle').addEventListener('click', () => {

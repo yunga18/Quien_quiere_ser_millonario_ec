@@ -1,3 +1,5 @@
+import { DEFAULT_CATEGORY, getCategory, filterQuestions } from './categories.js';
+
 export const PRIZES = [100, 200, 300, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 125000, 250000, 500000, 1000000];
 export const SAFE_LEVELS = [5, 10];
 export const GAME_VERSION = 1;
@@ -12,10 +14,11 @@ export function shuffle(values, rng = Math.random) {
   return result;
 }
 
-export function createGame(bank, name = 'Concursante', rng = Math.random, recentIds = []) {
+export function createGame(bank, name = 'Concursante', rng = Math.random, recentIds = [], category = DEFAULT_CATEGORY) {
+  const categoryBank = filterQuestions(bank, category);
   const questions = [];
   for (let difficulty = 1; difficulty <= 5; difficulty++) {
-    const pool = bank.filter(q => q.difficulty === difficulty);
+    const pool = categoryBank.filter(q => q.difficulty === difficulty);
     if (pool.length < 3) throw new Error(`Faltan preguntas del nivel ${difficulty}.`);
     const fresh = shuffle(pool.filter(q => !recentIds.includes(q.id)), rng);
     const recent = shuffle(pool.filter(q => recentIds.includes(q.id)), rng);
@@ -27,7 +30,7 @@ export function createGame(bank, name = 'Concursante', rng = Math.random, recent
   return {
     version: GAME_VERSION,
     id: globalThis.crypto?.randomUUID?.() ?? `game-${Date.now()}-${Math.floor(rng() * 1e9)}`,
-    name: String(name).trim().slice(0, 32) || 'Concursante',
+    name: String(name).trim().slice(0, 32) || 'Concursante', category,
     questions, index: 0, won: 0, safe: 0,
     phase: 'question', selected: null, lastCorrect: null,
     eliminated: [], lifelines: { fifty: false, audience: false, phone: false },
@@ -124,8 +127,12 @@ export function restoreGame(raw, bank) {
     if (!Number.isInteger(g.index) || g.index < 0 || g.index > 14 || !['question', 'locked', 'revealed'].includes(g.phase)) return null;
     if (typeof g.name !== 'string' || typeof g.id !== 'string' || typeof g.startedAt !== 'string') return null;
     if (new Set(g.questions.map(q => q.id)).size !== 15) return null;
+    // Saves from the original Ecuador edition have no category field.
+    const category = g.category ?? DEFAULT_CATEGORY;
+    if (!getCategory(category)) return null;
+    const categoryBank = filterQuestions(bank, category);
     const questions = g.questions.map((saved, index) => {
-      const original = bank.find(q => q.id === saved.id);
+      const original = categoryBank.find(q => q.id === saved.id);
       if (!original || original.difficulty !== Math.floor(index / 3) + 1 || !Array.isArray(saved.answers) || saved.answers.length !== 4) throw new Error('Invalid question');
       if (new Set(saved.answers).size !== 4 || saved.answers.some(a => !original.answers.includes(a))) throw new Error('Invalid answers');
       return { ...original, answers: saved.answers, correct: saved.answers.indexOf(original.answers[0]) };
@@ -148,7 +155,7 @@ export function restoreGame(raw, bank) {
       if (!Number.isInteger(p.answer) || p.answer < 0 || p.answer > 3 || typeof p.confident !== 'boolean') return null;
       helpers.phone = p;
     }
-    return { ...g, questions, name: g.name.slice(0, 32), phase: g.phase === 'locked' ? 'question' : g.phase,
+    return { ...g, category, questions, name: g.name.slice(0, 32), phase: g.phase === 'locked' ? 'question' : g.phase,
       selected: g.phase === 'revealed' ? g.selected : null, lastCorrect,
       won: completed ? PRIZES[completed - 1] : 0, safe: safeLevel ? PRIZES[safeLevel - 1] : 0,
       helpers, result: null };

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#070d25">
-  <meta name="description" content="Entra al estudio y pon a prueba cuánto sabes de Ecuador. 15 preguntas, 3 comodines y un millón de dólares virtuales.">
+  <meta name="description" content="Pon a prueba lo que sabes de Ecuador y de cultura general. Elige tu categoría: 15 preguntas, 3 comodines y un millón de dólares virtuales.">
   <title>¿Quién quiere ser millonario? · Ecuador</title>
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
@@ -29,6 +29,7 @@
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></symbol>
     <symbol id="i-save" viewBox="0 0 24 24"><path d="M3 4h15l3 3v14H3V4Zm4 0v6h10V4M7 21v-7h10v7"/></symbol>
     <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 3H3v18h6m-1-9h13m-5-5 5 5-5 5"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></symbol>
   </svg>
   <a href="#main" class="skip-link">Saltar al juego</a>
   <header class="topbar">
@@ -49,14 +50,18 @@
       <div class="home-content">
         <div class="edition-chip"><span class="ecuador-flag" aria-label="Ecuador"></span> DE AQUÍ. CON ORGULLO.</div>
         <h1>El siguiente millonario<br>podrías ser <em>tú.</em></h1>
-        <p class="home-lead">Un país increíble. Quince preguntas.<br>¿Hasta dónde te lleva lo que sabes?</p>
+        <p class="home-lead">Ecuador y el mundo. Quince preguntas.<br>¿Hasta dónde te lleva lo que sabes?</p>
         <form id="start-form" class="start-form">
+          <label for="game-category">¿QUÉ QUIERES PONER A PRUEBA?</label>
+          <div class="category-field"><select id="game-category" name="category" aria-describedby="category-description"></select><span aria-hidden="true">⌄</span></div>
+          <p id="category-description" class="category-description"></p>
           <label for="player-name">¿CÓMO TE LLAMAS?</label>
           <div class="start-fields"><input id="player-name" name="name" autocomplete="nickname" maxlength="32" placeholder="Tu nombre o apodo" aria-label="Tu nombre o apodo"><button class="gold-button" type="submit">Entrar al estudio <svg><use href="#i-arrow"/></svg></button></div>
         </form>
         <button id="resume-button" class="resume-button" hidden><svg><use href="#i-save"/></svg><span>Continuar mi partida</span><svg><use href="#i-arrow"/></svg></button>
+        <button id="delete-save-button" class="delete-save-button" hidden><svg><use href="#i-trash"/></svg> Borrar partida guardada</button>
         <div class="home-facts"><div><strong>15</strong><span>PREGUNTAS</span></div><i></i><div><strong>3</strong><span>COMODINES</span></div><i></i><div><strong>$1.000.000</strong><span>PREMIO VIRTUAL</span></div></div>
-        <div class="home-links"><button id="home-rules">Cómo jugar <svg><use href="#i-arrow"/></svg></button><button id="history-button"><svg><use href="#i-trophy"/></svg> Mis mejores partidas</button></div>
+        <div class="home-links"><button id="home-rules">Cómo jugar <svg><use href="#i-arrow"/></svg></button><button id="history-button"><svg><use href="#i-trophy"/></svg> Mis partidas</button></div>
       </div>
       <div class="home-caption">COSTA · SIERRA · AMAZONÍA · GALÁPAGOS</div>
     </section>
@@ -96,7 +101,7 @@
     </section>
 
     <section id="result-screen" class="result-screen" hidden aria-label="Resultado de la partida">
-      <div class="result-card"><div class="result-icon" id="result-icon"><svg><use href="#i-trophy"/></svg></div><span class="eyebrow" id="result-eyebrow">TU GRAN MOMENTO</span><h1 id="result-title">¡Una gran partida!</h1><p id="result-message"></p><div class="result-prize" id="result-prize">$0</div><span class="virtual-label">DÓLARES VIRTUALES</span><div class="result-stats"><div><strong id="result-correct">0 / 15</strong><span>ACIERTOS</span></div><div><strong id="result-lifelines">0 / 3</strong><span>COMODINES USADOS</span></div></div><button id="play-again" class="gold-button">Volver al asiento caliente <svg><use href="#i-arrow"/></svg></button><button id="result-home" class="text-button"><svg><use href="#i-home"/></svg> Volver al inicio</button><p id="result-save-note" class="result-save-note">Tu resultado se guardó en este dispositivo.</p></div>
+      <div class="result-card"><div class="result-icon" id="result-icon"><svg><use href="#i-trophy"/></svg></div><span class="eyebrow" id="result-eyebrow">TU GRAN MOMENTO</span><h1 id="result-title">¡Una gran partida!</h1><p id="result-message"></p><div class="result-prize" id="result-prize">$0</div><span class="virtual-label">DÓLARES VIRTUALES</span><div class="result-stats"><div><strong id="result-correct">0 / 15</strong><span>ACIERTOS</span></div><div><strong id="result-lifelines">0 / 3</strong><span>COMODINES USADOS</span></div></div><button id="play-again" class="gold-button">Volver al asiento caliente <svg><use href="#i-arrow"/></svg></button><button id="result-home" class="text-button"><svg><use href="#i-home"/></svg> Elegir otra categoría</button><p id="result-save-note" class="result-save-note">Tu resultado se guardó en este dispositivo.</p></div>
       <div id="confetti" class="confetti" aria-hidden="true"></div>
     </section>
   </main>
