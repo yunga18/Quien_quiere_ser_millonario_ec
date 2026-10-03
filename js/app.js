@@ -153,21 +153,23 @@ function openDialog(type, html) {
   if (dialog.open) return false;
   dialogType = type; $('dialog-content').innerHTML = html; dialog.showModal(); return true;
 }
-function closeDialog() { dialog.close(); }
+function closeDialog() {
+  clearInterval(phoneInterval); phoneInterval = null;
+  const cancelAnswer = dialogType === 'confirm' && game?.phase === 'question';
+  const oldSelection = game?.selected;
+  if (dialogType === 'phone') speak('', false);
+  dialogType = null;
+  if (cancelAnswer) { game = cancelSelection(game); renderGame(); }
+  dialog.close();
+  if (cancelAnswer) document.querySelector(`[data-answer="${oldSelection}"]`)?.focus({ preventScroll: true });
+}
 $('dialog-close').addEventListener('click', closeDialog);
 dialog.addEventListener('click', event => {
   if (event.target !== dialog) return;
   const rect = dialog.getBoundingClientRect();
   if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) closeDialog();
 });
-dialog.addEventListener('close', () => {
-  clearInterval(phoneInterval); phoneInterval = null;
-  if (dialogType === 'confirm' && game?.phase === 'question') {
-    const oldSelection = game.selected; game = cancelSelection(game); renderGame();
-    document.querySelector(`[data-answer="${oldSelection}"]`)?.focus({ preventScroll: true });
-  }
-  dialogType = null;
-});
+dialog.addEventListener('cancel', event => { event.preventDefault(); closeDialog(); });
 
 function chooseAnswer(index) {
   const next = selectAnswer(game, index);
